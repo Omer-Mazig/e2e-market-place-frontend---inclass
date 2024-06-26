@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { PRODUCT_BASE_URL } from "../../constants/url.constant";
 
 function ProductDetailsPage() {
   const { productId } = useParams();
@@ -8,9 +9,7 @@ function ProductDetailsPage() {
 
   useEffect(() => {
     async function fetchData() {
-      const response = await axios.get(
-        `http://localhost:3000/api/product/${productId}`,
-      );
+      const response = await axios.get(`${PRODUCT_BASE_URL}/${productId}`);
       const data = response.data;
       setProduct(data);
     }
