@@ -7,11 +7,14 @@ import { CATEGORIES } from "../../constants/data.constants";
 import ProductFilter from "../components/ProductFilter";
 import Pagination from "../components/Pagination";
 import { AddProductForm } from "../components/AddProductForm";
+import { useUserContext } from "../contexts/UserContext";
 
 function ProductPage() {
   const [products, setProducts] = useState([]);
   const [productCount, setProductCount] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const { loggedInUser } = useUserContext();
 
   const [filterValues, setFilterValues] = useState({
     name: searchParams.get("name") || "",
@@ -159,22 +162,24 @@ function ProductPage() {
         <h1 className="text-center text-3xl">ProductPage</h1>
       </div>
 
-      <ProductFilter
-        filterValues={filterValues}
-        handleFilterChange={handleFilterChange}
-        handleCategoryChange={handleCategoryChange}
-        applyFilters={applyFilters}
-      />
+      <div className="mx-auto max-w-3xl rounded-md bg-gray-300 p-4 shadow-sm">
+        <h2>Filter</h2>
+        <ProductFilter
+          filterValues={filterValues}
+          handleFilterChange={handleFilterChange}
+          handleCategoryChange={handleCategoryChange}
+          applyFilters={applyFilters}
+        />
+      </div>
+      {loggedInUser && <AddProductForm onSubmit={handleCreateProduct} />}
+
+      <ProductList products={products} onDeleteProduct={handleDeleteProduct} />
 
       <Pagination
         page={page}
         productCount={productCount}
         handlePageChange={handlePageChange}
       />
-
-      <AddProductForm onSubmit={handleCreateProduct} />
-
-      <ProductList products={products} onDeleteProduct={handleDeleteProduct} />
     </main>
   );
 }

@@ -3,7 +3,10 @@ import { Button } from "./ui/Button";
 
 export function AddProductForm({ onSubmit }) {
   return (
-    <form onSubmit={onSubmit} className="mx-auto grid max-w-72 space-y-4">
+    <form
+      onSubmit={onSubmit}
+      className="mx-auto grid max-w-72 space-y-4 rounded-md bg-gray-300 p-4 shadow-sm"
+    >
       <div className="flex flex-col gap-1">
         <label htmlFor="name">Name:</label>
         <input
