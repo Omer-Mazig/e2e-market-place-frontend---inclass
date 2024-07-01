@@ -45,6 +45,7 @@ function ProductPage() {
   useEffect(() => {
     async function fetchData() {
       const params = {};
+      // Convert URLSearchParams to object
       for (const [key, value] of searchParams.entries()) {
         params[key] = value;
       }
