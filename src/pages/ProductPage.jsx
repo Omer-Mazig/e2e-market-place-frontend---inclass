@@ -16,18 +16,8 @@ function ProductPage() {
 
   const { loggedInUser } = useUserContext();
 
-  const [filterValues, setFilterValues] = useState({
-    name: searchParams.get("name") || "",
-    inStock: searchParams.get("inStock") === "true",
-    onSale: searchParams.get("onSale") === "true",
-    minPrice: searchParams.get("minPrice") || "",
-    maxPrice: searchParams.get("maxPrice") || "",
-    categories: searchParams.getAll("categories").length
-      ? searchParams.getAll("categories")
-      : CATEGORIES,
-  });
-
   const page =
+    isNaN(parseInt(searchParams.get("page"))) ||
     parseInt(searchParams.get("page")) < 1
       ? 1
       : parseInt(searchParams.get("page"));
@@ -103,60 +93,6 @@ function ProductPage() {
     setProducts([...products, newProduct]);
   }
 
-  function handleFilterChange(ev) {
-    const { name, value, type, checked } = ev.target;
-
-    setFilterValues((prevValues) => ({
-      ...prevValues,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  }
-
-  function handleCategoryChange(ev) {
-    const { checked, id } = ev.target;
-    setFilterValues((prevValues) => {
-      const newCategories = checked
-        ? [...prevValues.categories, id]
-        : prevValues.categories.filter((category) => category !== id);
-      return { ...prevValues, categories: newCategories };
-    });
-  }
-
-  function handlePageChange(newPage) {
-    console.log("newPage", newPage);
-    searchParams.set("page", newPage);
-    setSearchParams(searchParams);
-  }
-
-  function applyFilters() {
-    const { name, inStock, onSale, minPrice, maxPrice, categories } =
-      filterValues;
-    if (name) searchParams.set("name", name);
-    else searchParams.delete("name");
-
-    if (inStock) searchParams.set("inStock", "true");
-    else searchParams.delete("inStock");
-
-    if (onSale) searchParams.set("onSale", "true");
-    else searchParams.delete("onSale");
-
-    if (minPrice) searchParams.set("minPrice", minPrice);
-    else searchParams.delete("minPrice");
-
-    if (maxPrice) searchParams.set("maxPrice", maxPrice);
-    else searchParams.delete("maxPrice");
-
-    searchParams.delete("categories");
-    categories.forEach((category) =>
-      searchParams.append("categories", category),
-    );
-
-    // Reset to page 1 when filters change
-    searchParams.set("page", 1);
-
-    setSearchParams(searchParams);
-  }
-
   return (
     <main className="mx-4 mt-4 space-y-4">
       <div>
@@ -166,10 +102,8 @@ function ProductPage() {
       <div className="mx-auto max-w-3xl rounded-md bg-gray-300 p-4 shadow-sm">
         <h2>Filter</h2>
         <ProductFilter
-          filterValues={filterValues}
-          handleFilterChange={handleFilterChange}
-          handleCategoryChange={handleCategoryChange}
-          applyFilters={applyFilters}
+          searchParams={searchParams}
+          setSearchParams={setSearchParams}
         />
       </div>
       {loggedInUser && <AddProductForm onSubmit={handleCreateProduct} />}
@@ -179,7 +113,10 @@ function ProductPage() {
       <Pagination
         page={page}
         productCount={productCount}
-        handlePageChange={handlePageChange}
+        handlePageChange={(newPage) => {
+          searchParams.set("page", newPage);
+          setSearchParams(searchParams);
+        }}
       />
     </main>
   );

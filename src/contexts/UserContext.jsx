@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { formatJWTTokenToUser } from "../../utils";
 import { USER_BASE_URL } from "../../constants/url.constant";
 
 const UserContext = createContext();
@@ -16,11 +15,8 @@ export const UserProvider = ({ children }) => {
       const token = localStorage.getItem("jwt");
       if (!token) return;
 
-      const { userId } = formatJWTTokenToUser(token);
-      if (!userId) return;
-
       try {
-        const response = await axios.get(USER_BASE_URL + userId, {
+        const response = await axios.get(USER_BASE_URL + "/loggedInUser", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
