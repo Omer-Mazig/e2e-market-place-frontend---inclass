@@ -1,7 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useUserContext } from "../contexts/UserContext";
 
 export function ProductList({ products, onDeleteProduct }) {
+  const { loggedInUser } = useUserContext();
+
   function handleDeleteProduct(ev, productId) {
     ev.preventDefault(); // Prevent navigation
     ev.stopPropagation(); // Stop event from bubbling up
@@ -40,6 +43,11 @@ export function ProductList({ products, onDeleteProduct }) {
               <div className="mt-4">
                 <p className="font-bold text-gray-700">${product.price}</p>
               </div>
+              {loggedInUser && product.user === loggedInUser._id && (
+                <button onClick={(ev) => handleDeleteProduct(ev, product._id)}>
+                  Delete
+                </button>
+              )}
             </div>
           </Link>
         );

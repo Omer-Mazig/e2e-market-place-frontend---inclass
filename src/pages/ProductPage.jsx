@@ -6,6 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import { CATEGORIES } from "../../constants/data.constants";
 import ProductFilter from "../components/ProductFilter";
 import Pagination from "../components/Pagination";
+import { AddProductForm } from "../components/AddProductForm";
 
 function ProductPage() {
   const [products, setProducts] = useState([]);
@@ -29,7 +30,7 @@ function ProductPage() {
       : parseInt(searchParams.get("page"));
 
   useEffect(() => {
-    // Set initial search params if categories are not already set
+    // Set initial search params if categories are not already set (so we can see it in the URL)
     if (!searchParams.getAll("categories").length) {
       CATEGORIES.forEach((category) =>
         searchParams.append("categories", category),
@@ -50,8 +51,6 @@ function ProductPage() {
 
       const options = { params };
 
-      console.log("options", options);
-
       // Fetch the products
       const response = await axios.get(PRODUCT_BASE_URL, options);
       const data = response.data;
@@ -69,7 +68,12 @@ function ProductPage() {
   }, [searchParams, page]);
 
   async function handleDeleteProduct(productId) {
-    await axios.delete(`${PRODUCT_BASE_URL}/${productId}`);
+    const token = localStorage.getItem("jwt");
+
+    await axios.delete(`${PRODUCT_BASE_URL}/${productId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
     const newProducts = products.filter((product) => product._id !== productId);
     setProducts(newProducts);
   }
@@ -79,10 +83,18 @@ function ProductPage() {
     const form = ev.target;
     const name = form.name.value;
     const price = form.price.value;
-    const response = await axios.post(PRODUCT_BASE_URL, {
-      name,
-      price,
-    });
+
+    const token = localStorage.getItem("jwt");
+
+    const response = await axios.post(
+      PRODUCT_BASE_URL,
+      {
+        name,
+        price,
+      },
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+
     const newProduct = response.data;
     setProducts([...products, newProduct]);
   }
@@ -160,7 +172,7 @@ function ProductPage() {
         handlePageChange={handlePageChange}
       />
 
-      {/* <AddProductForm onSubmit={handleCreateProduct} /> */}
+      <AddProductForm onSubmit={handleCreateProduct} />
 
       <ProductList products={products} onDeleteProduct={handleDeleteProduct} />
     </main>

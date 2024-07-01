@@ -6,7 +6,7 @@ import { USER_BASE_URL } from "../../constants/url.constant";
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [loggedInUser, setLoggedInUser] = useState(null);
+  const [loggedInUser, setLoggedInUser] = useState(undefined);
 
   useEffect(() => {
     if (loggedInUser) {
@@ -14,25 +14,33 @@ export const UserProvider = ({ children }) => {
     }
     async function fetchUser() {
       const token = localStorage.getItem("jwt");
-      if (token) {
-        const { userId } = formatJWTTokenToUser(token);
-        if (userId) {
-          try {
-            const response = await axios.get(USER_BASE_URL + userId, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            if (response.status !== 200) {
-              throw new Error("Failed to fetch user data");
-            }
-            setLoggedInUser(response.data);
-          } catch (error) {
-            console.error("Error fetching user data:", error);
-          }
+      if (!token) return;
+
+      const { userId } = formatJWTTokenToUser(token);
+      if (!userId) return;
+
+      try {
+        const response = await axios.get(USER_BASE_URL + userId, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setLoggedInUser(response.data);
+      } catch (error) {
+        if (error.response.status === 401) {
+          console.error("Invalid token, logging out");
+          localStorage.removeItem("jwt");
+          setLoggedInUser(null);
+        } else if (error.response.status === 404) {
+          console.error("User not found, logging out");
+          localStorage.removeItem("jwt");
+          setLoggedInUser(null);
+        } else {
+          console.error("Error fetching user data:", error);
         }
       }
     }
+
     fetchUser();
   }, [loggedInUser]);
 
