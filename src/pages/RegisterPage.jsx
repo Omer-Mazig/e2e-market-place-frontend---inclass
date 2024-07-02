@@ -1,7 +1,6 @@
-import axios from "axios";
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { AUTH_REGISTER_BASE_URL } from "../../constants/url.constant";
+import api from "../services/api.service";
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -13,7 +12,7 @@ function RegisterPage() {
     const firstName = event.target.firstName.value;
     const lastName = event.target.lastName.value;
 
-    const response = await axios.post(AUTH_REGISTER_BASE_URL, {
+    const response = await api.post("/auth/register", {
       username,
       password,
       firstName,

@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import axios from "axios";
-import { USER_BASE_URL } from "../../constants/url.constant";
+import api from "../services/api.service";
 
 const UserContext = createContext();
 
@@ -11,16 +10,12 @@ export const UserProvider = ({ children }) => {
     if (loggedInUser) {
       return;
     }
-    async function fetchUser() {
-      const token = localStorage.getItem("jwt");
-      if (!token) return;
+    const token = localStorage.getItem("jwt");
+    if (!token) return;
 
+    async function fetchUser() {
       try {
-        const response = await axios.get(USER_BASE_URL + "/loggedInUser", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await api.get("/user/loggedInUser");
         setLoggedInUser(response.data);
       } catch (error) {
         if (error.response.status === 401) {

@@ -151,7 +151,7 @@ function ProductFilter() {
         </div>
       </div>
 
-      <Button onClick={() => applyFilters(filterValues)}>Apply Filters</Button>
+      <Button onClick={applyFilters}>Apply Filters</Button>
     </div>
   );
 }

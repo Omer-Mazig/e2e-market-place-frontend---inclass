@@ -1,6 +1,4 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { PRODUCT_BASE_URL } from "../../constants/url.constant";
 import { ProductList } from "../components/ProductList";
 import { useSearchParams } from "react-router-dom";
 import { CATEGORIES } from "../../constants/data.constants";
@@ -8,6 +6,7 @@ import ProductFilter from "../components/ProductFilter";
 import Pagination from "../components/Pagination";
 import { AddProductForm } from "../components/AddProductForm";
 import { useUserContext } from "../contexts/UserContext";
+import api from "../services/api.service";
 
 function ProductPage() {
   const [products, setProducts] = useState([]);
@@ -33,43 +32,38 @@ function ProductPage() {
   }, []);
 
   useEffect(() => {
-    async function fetchData() {
-      const params = {};
-      // Convert URLSearchParams to object
-      for (const [key, value] of searchParams.entries()) {
-        params[key] = value;
-      }
-      params.page = page;
-
-      params.categories = searchParams.getAll("categories");
-
-      const options = { params };
-
-      // Fetch the products
-      const response = await axios.get(PRODUCT_BASE_URL, options);
-      const data = response.data;
-      setProducts(data);
-
-      // Fetch the product count
-      const countResponse = await axios.get(
-        `${PRODUCT_BASE_URL}/count`,
-        options,
-      );
-      const { count } = countResponse.data;
-      setProductCount(count);
-    }
     fetchData();
   }, [searchParams, page]);
 
+  async function fetchData() {
+    const params = {};
+    // Convert URLSearchParams to object
+    for (const [key, value] of searchParams.entries()) {
+      params[key] = value;
+    }
+    params.page = page;
+
+    params.categories = searchParams.getAll("categories");
+
+    const options = { params };
+
+    // Fetch the products
+    const response = await api.get("/product", options);
+    const data = response.data;
+    setProducts(data);
+
+    // Fetch the product count
+    const countResponse = await api.get(`/product/count`, options);
+    const { count } = countResponse.data;
+    setProductCount(count);
+  }
+
   async function handleDeleteProduct(productId) {
-    const token = localStorage.getItem("jwt");
+    await api.delete(`/product/${productId}`);
 
-    await axios.delete(`${PRODUCT_BASE_URL}/${productId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    const newProducts = products.filter((product) => product._id !== productId);
-    setProducts(newProducts);
+    // const newProducts = products.filter((product) => product._id !== productId);
+    // setProducts(newProducts);
+    await fetchData();
   }
 
   async function handleCreateProduct(ev) {
@@ -78,19 +72,14 @@ function ProductPage() {
     const name = form.name.value;
     const price = form.price.value;
 
-    const token = localStorage.getItem("jwt");
-
-    const response = await axios.post(
-      PRODUCT_BASE_URL,
-      {
-        name,
-        price,
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+    const response = await api.post("/product", {
+      name,
+      price,
+    });
 
     const newProduct = response.data;
-    setProducts([...products, newProduct]);
+    // setProducts([...products, newProduct]);
+    await fetchData();
   }
 
   return (
@@ -101,10 +90,7 @@ function ProductPage() {
 
       <div className="mx-auto max-w-3xl rounded-md bg-gray-300 p-4 shadow-sm">
         <h2>Filter</h2>
-        <ProductFilter
-          searchParams={searchParams}
-          setSearchParams={setSearchParams}
-        />
+        <ProductFilter />
       </div>
       {loggedInUser && <AddProductForm onSubmit={handleCreateProduct} />}
 
